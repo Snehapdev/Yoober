@@ -14,6 +14,7 @@ pipeline {
                 // Build the Maven project
                 script {
                     def mvnHome = tool 'MavenTool1'
+                    // Run Maven build without nohup
                     sh "${mvnHome}/bin/mvn clean install"
                 }
             }
@@ -24,6 +25,7 @@ pipeline {
                 // Run tests using Maven
                 script {
                     def mvnHome = tool 'MavenTool1'
+                    // Run Maven test without nohup
                     sh "${mvnHome}/bin/mvn test"
                 }
             }
