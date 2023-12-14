@@ -11,42 +11,38 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build the Maven project
+                // Use the configured Maven tool
                 script {
                     def mvnHome = tool 'MavenTool1'
-                    // Run Maven build without nohup
-                    sh "${mvnHome}/bin/mvn clean install"
+                    bat "${mvnHome}/bin/mvn clean install"
                 }
             }
         }
 
         stage('Test') {
             steps {
-                // Run tests using Maven
+                // Use the configured Maven tool
                 script {
                     def mvnHome = tool 'MavenTool1'
-                    // Run Maven test without nohup
-                    sh "${mvnHome}/bin/mvn test"
+                    bat "${mvnHome}/bin/mvn test"
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo('skipping deployment')
+                echo 'skipping deployment'
             }
         }
     }
 
     post {
         success {
-            // Actions to be taken if the build and tests succeed
             echo 'Build and tests succeeded! Deploying...'
             // Add deployment steps here if needed
         }
 
         failure {
-            // Actions to be taken if the build or tests fail
             echo 'Build or tests failed! Notify the team...'
         }
     }
