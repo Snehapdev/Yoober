@@ -20,11 +20,12 @@ pipeline {
         }
 
         stage('Test') {
+            stage('Build') {
             steps {
-                // Run tests using Maven
+                // Use the configured Maven tool
                 script {
-                    def mvnHome = tool 'Maven'
-                    sh "${mvnHome}/bin/mvn test"
+                    def mvnHome = tool 'MavenTool1'
+                    sh "${mvnHome}/bin/mvn clean install"
                 }
             }
         }
