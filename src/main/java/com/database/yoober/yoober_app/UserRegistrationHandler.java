@@ -15,7 +15,7 @@ public class UserRegistrationHandler {
 
     private static final Logger log = LogManager.getLogger(UserRegistrationHandler.class);
 
-    public int registerUser(Connection connection, String accountType, String firstName, String lastName,
+    public int registerUser(Connection connection, String firstName, String lastName,
             String birthdate, String phoneNumber, String emailAddress, String streetAddress, String city,
             String province, String postalCode) throws Exception {
         try {
@@ -25,6 +25,9 @@ public class UserRegistrationHandler {
 
         } catch (SQLException | UserRegistrationException e) {
             // Log the exception 
+            log.error("Failed to register user", e);
+            throw e;
+        } catch (Exception e){
             log.error("Failed to register user", e);
             throw e;
         }

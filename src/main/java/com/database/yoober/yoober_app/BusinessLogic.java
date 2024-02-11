@@ -31,6 +31,7 @@ public class BusinessLogic {
     @Autowired
     private RideRequestHandler rideRequestHandler;
 
+
     private static final Logger log = LogManager.getLogger(BusinessLogic.class);
 
     public List<Map<String, String>> retrieveUserData() {
@@ -96,7 +97,7 @@ public class BusinessLogic {
      *
      * @param driverEmail The email address of the driver.
      * @return A list of maps containing the driver's email and their average
-     *         rating.
+     * rating.
      */
     public List<Map<String, String>> calculateAverageRatingForDriver(String driverEmail) {
         // List to store the result
@@ -113,7 +114,7 @@ public class BusinessLogic {
                 "group by dt.email";
 
         try (Connection connection = DriverManager.getConnection(getDataBaseURL());
-                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
 
             // Set the driver's email as a parameter in the prepared statement
             preparedStatement.setString(1, driverEmail);
@@ -141,7 +142,7 @@ public class BusinessLogic {
         return resultList;
     }
 
-    public void createNewUserAccount() throws Exception {
+    public void createNewUserAccount_desk() throws Exception {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -183,7 +184,7 @@ public class BusinessLogic {
             connection.setAutoCommit(false);
 
             // Register the user and get the user ID
-            int userId = userRegistrationHandler.registerUser(connection, accountType, firstName, lastName, birthdate,
+            int userId = userRegistrationHandler.registerUser(connection, firstName, lastName, birthdate,
                     phoneNumber, emailAddress, streetAddress, city, province, postalCode);
 
             if (userId != -1) {
@@ -222,6 +223,47 @@ public class BusinessLogic {
 
         }
 
+    }
+
+
+    public void createNewUserAccount(UserInfoRequest userInfoRequest) throws Exception {
+        String accountType = userInfoRequest.getAccountType();
+
+        try (Connection connection = DriverManager.getConnection(getDataBaseURL())) {
+            connection.setAutoCommit(false);
+
+            int userId = userRegistrationHandler.registerUser(connection, userInfoRequest.getFirstName(),
+                    userInfoRequest.getLastName(), userInfoRequest.getBirthDate(), userInfoRequest.getPhoneNumber(), userInfoRequest.getEmailAddress(),
+                    userInfoRequest.getStreetAddress(), userInfoRequest.getCity(), userInfoRequest.getProvince(), userInfoRequest.getPostalCode());
+
+            if (userId != -1) {
+                System.out.println("\nNew account created successfully.\n");
+
+                if ("passenger".equals(accountType) || "both".equals(accountType)) {
+                    if (YooberUtil.isValidCreditCardNumber(userInfoRequest.getCreditCardNumber())) {
+                        userRegistrationHandler.saveCreditCard(connection, userId, userInfoRequest.getCreditCardNumber());
+                        System.out.println("Passenger credit card details added successfully.");
+                    } else {
+                        System.out.println("Invalid credit card number.");
+                    }
+                }
+
+                if ("driver".equals(accountType) || "both".equals(accountType)) {
+                    System.out.println("Enter Driver's License Number:");
+                    userRegistrationHandler.insertDriver(connection, userId, userInfoRequest.getLicenseNumber(), userInfoRequest.getLicenseExpiryDateStr());
+                    System.out.println("Driver account created successfully.");
+                }
+
+                connection.commit();
+            } else {
+                System.out.println("User registration failed. Please try again.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error occurred during user registration. Please try again.");
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     /**
@@ -328,7 +370,7 @@ public class BusinessLogic {
                     "JOIN user u ON u.user_id = tr.user_id " +
                     "WHERE t.end_date_time IS NULL OR t.end_date_time = '' ";
             try (PreparedStatement uncompletedRidesStatement = connection.prepareStatement(uncompletedRidesQuery);
-                    ResultSet uncompletedRidesResult = uncompletedRidesStatement.executeQuery()) {
+                 ResultSet uncompletedRidesResult = uncompletedRidesStatement.executeQuery()) {
 
                 // Display details of uncompleted rides
                 System.out.println("Uncompleted Rides:");
@@ -397,7 +439,7 @@ public class BusinessLogic {
     }
 
     private static void updateRideAsCompleted(Connection connection, int rideId, String endDate,
-            int distance, int cost, int driverRating, int passengerRating)
+                                              int distance, int cost, int driverRating, int passengerRating)
             throws SQLException, RideCompletionException {
 
         String updateRideQuery = "UPDATE trip SET end_date_time = ?, total_distance = ?, amount_charged = ?, " +
@@ -434,8 +476,8 @@ public class BusinessLogic {
      * @param passengerEmail The email address of the passenger for whom the total
      *                       amount is calculated.
      * @return A List of Maps containing the result, where each Map includes keys
-     *         "PassengerEmail"
-     *         and "TotalAmountCharged" with corresponding values.
+     * "PassengerEmail"
+     * and "TotalAmountCharged" with corresponding values.
      */
     public List<Map<String, String>> calculateTotalAmountChargedForPassenger(
             String passengerEmail) {
@@ -454,7 +496,7 @@ public class BusinessLogic {
                 "    u.email = ?";
 
         try (Connection connection = DriverManager.getConnection(getDataBaseURL());
-                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
 
             preparedStatement.setString(1, passengerEmail);
 
@@ -479,14 +521,14 @@ public class BusinessLogic {
     }
 
     private String getDataBaseURL() {
-        Path filePath = Paths.get( "src", "main", "resources",
+        Path filePath = Paths.get("src", "main", "resources",
                 "Yoober_DB_group10.db");
         return dataSourcePrefix + filePath.toAbsolutePath().toString();
     }
 
     /**
      * Check if a user with the given email exists in the database.
-     * 
+     *
      * @param userEmail The email of the user to check.
      * @return True if the user exists, false otherwise.
      * @throws SQLException If a database error occurs.
@@ -494,7 +536,7 @@ public class BusinessLogic {
     public boolean checkUserExists(String userEmail) throws SQLException {
         String sql = "SELECT COUNT(*) FROM user WHERE email = ?";
         try (Connection connection = DriverManager.getConnection(getDataBaseURL());
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, userEmail);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
@@ -507,7 +549,7 @@ public class BusinessLogic {
 
     /**
      * Check if a driver with the given email exists in the database.
-     * 
+     *
      * @param driverEmail The email of the driver to check.
      * @return True if the driver exists, false otherwise.
      * @throws SQLException If a database error occurs.
@@ -515,7 +557,7 @@ public class BusinessLogic {
     public boolean checkDriverExists(String driverEmail) throws SQLException {
         String sql = "SELECT COUNT(*) FROM user u join driver d on d.user_id = u.user_id WHERE u.email = ? and d.user_id IS NOT NULL";
         try (Connection connection = DriverManager.getConnection(getDataBaseURL());
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, driverEmail);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {

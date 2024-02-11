@@ -1,9 +1,6 @@
 package com.database.yoober.yoober_app;
 
 import java.util.Scanner;
-
-import javax.print.DocFlavor.STRING;
-
 import java.util.List;
 import java.util.Map;
 
@@ -11,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
 
 @SpringBootApplication
+@EnableWebMvc
 public class YooberAppApplication implements CommandLineRunner {
 
     private final MenuService menuService;
@@ -93,7 +93,7 @@ public class YooberAppApplication implements CommandLineRunner {
                     break;
                 case 4:
                     // Create a new account logic
-                    businessLogic.createNewUserAccount();
+                    businessLogic.createNewUserAccount_desk();
                     break;
                 case 5:
                     // Submit a ride request logic
